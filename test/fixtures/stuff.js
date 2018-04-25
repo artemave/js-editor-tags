@@ -6,4 +6,4 @@ function topLevelFunction () {
 }
 
 const bbb = require('./b')
-const {ccc} = require('./c')
+const {ccc, ddd} = require('./c')

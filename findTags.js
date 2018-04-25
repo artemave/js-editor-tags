@@ -6,7 +6,7 @@ const debug = require('debug')('js-tags')
 function ObjectPattern (node) {
   return node.id.properties.map(({key: {loc, name: tagname}}) => {
     return {tagname, loc, type: 'v'}
-  })[0]
+  })
 }
 
 module.exports = function findTags (filename, source) {
@@ -14,10 +14,10 @@ module.exports = function findTags (filename, source) {
     sourceType: 'module',
     plugins: ['jsx', 'flow']
   })
-  const tags = []
+  const result = []
 
-  function collect (tag, node) {
-    tags.push(tag)
+  function collect (...tags) {
+    result.push(...tags)
   }
 
   traverse(ast, {
@@ -41,14 +41,16 @@ module.exports = function findTags (filename, source) {
       debug('VariableDeclarator', JSON.stringify(node, null, 2))
 
       if (tagname) {
-        collect({ tagname: tagname, filename: filename, loc: node.loc, type: 'v' }, node)
+        collect({tagname: tagname, filename: filename, loc: node.loc, type: 'v'}, node)
       } else {
         const handler = {
           ObjectPattern
         }[node.id.type]
 
         if (handler) {
-          collect(Object.assign({filename}, handler(node)))
+          collect(
+            ...handler(node).map(t => Object.assign({filename}, t))
+          )
         }
       }
     },
@@ -72,5 +74,5 @@ module.exports = function findTags (filename, source) {
     }
   })
 
-  return tags
+  return result
 }

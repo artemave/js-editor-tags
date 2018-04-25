@@ -33,7 +33,7 @@ describe('tags', function () {
     })
   })
 
-  it('tags variables', function () {
+  it('tags "const bbb = 2"', function () {
     assertTag({
       tagname: 'bbb',
       loc: 8,
@@ -41,9 +41,17 @@ describe('tags', function () {
     })
   })
 
-  it('tags default object destruction', function () {
+  it('tags "const {ccc} = {}"', function () {
     assertTag({
       tagname: 'ccc',
+      loc: 9,
+      type: 'v'
+    })
+  })
+
+  it('tags "const {ccc, ddd} = {}"', function () {
+    assertTag({
+      tagname: 'ddd',
       loc: 9,
       type: 'v'
     })
