@@ -13,11 +13,16 @@
     "babel-traverse": "^6.26.0",
     "babylon": "^6.18.0",
     "debug": "^3.1.0",
-    "dot-prop": "^4.2.0"
+    "dot-prop": "^4.2.0",
+    "lowscore": "^1.17.0"
   },
   "standard": {
     "env": [
       "mocha"
+    ],
+    "ignore": [
+      "test/fixtures/stuff.js",
+      "test/fixtures/manualTest.js"
     ]
   }
 }

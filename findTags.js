@@ -2,18 +2,7 @@ const babylon = require('babylon')
 const {default: traverse} = require('babel-traverse')
 const {get} = require('dot-prop')
 const debug = require('debug')('js-tags')
-
-function ObjectPattern (node) {
-  return node.id.properties.map(({key: {loc, name: tagname}}) => {
-    return {tagname, loc, type: 'v'}
-  })
-}
-
-function ArrayPattern (node) {
-  return node.id.elements.map(({loc, name: tagname}) => {
-    return {tagname, loc, type: 'v'}
-  })
-}
+const flatten = require('lowscore/flatten')
 
 module.exports = function findTags (filename, source) {
   const ast = babylon.parse(source, {
@@ -24,6 +13,37 @@ module.exports = function findTags (filename, source) {
 
   function collect (...tags) {
     result.push(...tags)
+  }
+
+  function Identifier ({name, loc}) {
+    return [{tagname: name, loc: loc, type: 'v'}]
+  }
+
+  function ObjectPattern ({properties}) {
+    return properties.map(({value: node}) => {
+      return handleVariableDeclaration(node)
+    })
+  }
+
+  function ArrayPattern ({elements}) {
+    return elements.map(node => {
+      return handleVariableDeclaration(node)
+    })
+  }
+
+  function handleVariableDeclaration (node) {
+    const handler = {
+      Identifier,
+      ObjectPattern,
+      ArrayPattern
+    }[node.type]
+
+    if (handler) {
+      return handler(node)
+    } else {
+      debug('No handler for node type %s', node.type)
+      return []
+    }
   }
 
   traverse(ast, {
@@ -43,23 +63,12 @@ module.exports = function findTags (filename, source) {
       }
     },
     VariableDeclarator ({node}) {
-      const tagname = node.id.name
       debug('VariableDeclarator', JSON.stringify(node, null, 2))
-
-      if (tagname) {
-        collect({tagname: tagname, filename: filename, loc: node.loc, type: 'v'}, node)
-      } else {
-        const handler = {
-          ObjectPattern,
-          ArrayPattern
-        }[node.id.type]
-
-        if (handler) {
-          collect(
-            ...handler(node).map(t => Object.assign({filename}, t))
-          )
-        }
-      }
+      collect(
+        ...flatten(
+          handleVariableDeclaration(node.id)
+        ).map(t => Object.assign({filename}, t))
+      )
     },
     ImportDefaultSpecifier ({node}) {
       let tagname = node.local.name
