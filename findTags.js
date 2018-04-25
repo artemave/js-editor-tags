@@ -1,0 +1,76 @@
+const babylon = require('babylon')
+const {default: traverse} = require('babel-traverse')
+const {get} = require('dot-prop')
+const debug = require('debug')('js-tags')
+
+function ObjectPattern (node) {
+  return node.id.properties.map(({key: {loc, name: tagname}}) => {
+    return {tagname, loc, type: 'v'}
+  })[0]
+}
+
+module.exports = function findTags (filename, source) {
+  const ast = babylon.parse(source, {
+    sourceType: 'module',
+    plugins: ['jsx', 'flow']
+  })
+  const tags = []
+
+  function collect (tag, node) {
+    tags.push(tag)
+  }
+
+  traverse(ast, {
+    ClassDeclaration ({node}) {
+      const tagname = node.id.name
+      collect({tagname, filename, loc: node.loc, type: 'c'}, node)
+    },
+    ClassMethod ({node, parentPath}) {
+      if (node.key.name !== 'constructor') {
+        const tagname = node.key.name
+        const options = {}
+        const className = get('parentPath.parentPath.node.id.name')
+        if (className) {
+          options.class = className
+        }
+        collect({tagname, filename, loc: node.loc, type: 'f', options}, node)
+      }
+    },
+    VariableDeclarator ({node}) {
+      const tagname = node.id.name
+      debug('VariableDeclarator', JSON.stringify(node, null, 2))
+
+      if (tagname) {
+        collect({ tagname: tagname, filename: filename, loc: node.loc, type: 'v' }, node)
+      } else {
+        const handler = {
+          ObjectPattern
+        }[node.id.type]
+
+        if (handler) {
+          collect(Object.assign({filename}, handler(node)))
+        }
+      }
+    },
+    ImportDefaultSpecifier ({node}) {
+      let tagname = node.local.name
+      collect({tagname, filename, loc: node.loc, type: 'i'}, node)
+    },
+    ImportSpecifier ({node}) {
+      // id may be null for flow function declarations
+      if (node.id) {
+        let tagname = node.id.name
+        collect({tagname, filename, loc: node.loc, type: 'i'}, node)
+      }
+    },
+    FunctionDeclaration ({node}) {
+      // id may be null for flow function declarations
+      if (node.id) {
+        let tagname = node.id.name
+        collect({tagname, filename, loc: node.loc, type: 'f'}, node)
+      }
+    }
+  })
+
+  return tags
+}
