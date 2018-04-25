@@ -56,4 +56,20 @@ describe('tags', function () {
       type: 'v'
     })
   })
+
+  it('tags "const [eee] = []"', function () {
+    assertTag({
+      tagname: 'eee',
+      loc: 10,
+      type: 'v'
+    })
+  })
+
+  it('tags "const [eee, fff] = []"', function () {
+    assertTag({
+      tagname: 'fff',
+      loc: 10,
+      type: 'v'
+    })
+  })
 })

@@ -9,6 +9,12 @@ function ObjectPattern (node) {
   })
 }
 
+function ArrayPattern (node) {
+  return node.id.elements.map(({loc, name: tagname}) => {
+    return {tagname, loc, type: 'v'}
+  })
+}
+
 module.exports = function findTags (filename, source) {
   const ast = babylon.parse(source, {
     sourceType: 'module',
@@ -44,7 +50,8 @@ module.exports = function findTags (filename, source) {
         collect({tagname: tagname, filename: filename, loc: node.loc, type: 'v'}, node)
       } else {
         const handler = {
-          ObjectPattern
+          ObjectPattern,
+          ArrayPattern
         }[node.id.type]
 
         if (handler) {
