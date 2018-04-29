@@ -1,6 +1,5 @@
 const babylon = require('babylon')
 const {default: traverse} = require('babel-traverse')
-const {get} = require('dot-prop')
 const debug = require('debug')('js-tags')
 const flatten = require('lowscore/flatten')
 
@@ -52,17 +51,13 @@ module.exports = function findTags (filename, source) {
   traverse(ast, {
     ClassDeclaration ({node}) {
       const tagname = node.id.name
-      collect({tagname, filename, loc: node.loc, type: 'c'}, node)
+      collect({tagname, filename, loc: node.loc, type: 'c'})
     },
     ClassMethod ({node, parentPath}) {
+      debug('ClassMethod', JSON.stringify(node, null, 2))
       if (node.key.name !== 'constructor') {
         const tagname = node.key.name
-        const options = {}
-        const className = get('parentPath.parentPath.node.id.name')
-        if (className) {
-          options.class = className
-        }
-        collect({tagname, filename, loc: node.loc, type: 'f', options}, node)
+        collect({tagname, filename, loc: node.loc, type: 'm'})
       }
     },
     VariableDeclarator ({node}) {
@@ -75,20 +70,20 @@ module.exports = function findTags (filename, source) {
     },
     ImportDefaultSpecifier ({node}) {
       let tagname = node.local.name
-      collect({tagname, filename, loc: node.loc, type: 'i'}, node)
+      collect({tagname, filename, loc: node.loc, type: 'i'})
     },
     ImportSpecifier ({node}) {
       // id may be null for flow function declarations
       if (node.id) {
         let tagname = node.id.name
-        collect({tagname, filename, loc: node.loc, type: 'i'}, node)
+        collect({tagname, filename, loc: node.loc, type: 'i'})
       }
     },
     FunctionDeclaration ({node}) {
       // id may be null for flow function declarations
       if (node.id) {
         let tagname = node.id.name
-        collect({tagname, filename, loc: node.loc, type: 'f'}, node)
+        collect({tagname, filename, loc: node.loc, type: 'f'})
       }
     }
   })

@@ -12,3 +12,7 @@ const [{ggg}] = []
 const {a: [hhh]} = {}
 const [...iii] = []
 const [, ...kkk] = []
+
+class Stuff {
+  blah () {}
+}

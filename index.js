@@ -10,11 +10,6 @@ function formatTag (tag) {
     '"',
     tag.type
   ]
-  if (tag.options) {
-    Object.entries(tag.options).forEach(([key, value]) => {
-      line.push(key + ':' + value)
-    })
-  }
   return line.join('\t')
 }
 

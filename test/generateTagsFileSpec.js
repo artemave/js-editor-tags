@@ -104,4 +104,20 @@ describe('tags', function () {
       type: 'v'
     })
   })
+
+  it('tags class declarations', function () {
+    assertTag({
+      tagname: 'Stuff',
+      loc: 16,
+      type: 'c'
+    })
+  })
+
+  it('tags methods', function () {
+    assertTag({
+      tagname: 'blah',
+      loc: 17,
+      type: 'm'
+    })
+  })
 })
