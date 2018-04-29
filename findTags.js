@@ -26,16 +26,19 @@ module.exports = function findTags (filename, source) {
   }
 
   function ArrayPattern ({elements}) {
-    return elements.map(node => {
-      return handleVariableDeclaration(node)
-    })
+    return elements.map(handleVariableDeclaration)
+  }
+
+  function RestElement ({argument}) {
+    return handleVariableDeclaration(argument)
   }
 
   function handleVariableDeclaration (node) {
     const handler = {
       Identifier,
       ObjectPattern,
-      ArrayPattern
+      ArrayPattern,
+      RestElement
     }[node.type]
 
     if (handler) {

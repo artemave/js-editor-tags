@@ -81,10 +81,18 @@ describe('tags', function () {
     })
   })
 
-  it('tags "const {a: [hhh]}"', function () {
+  it('tags "const {a: [hhh]} = {}"', function () {
     assertTag({
       tagname: 'hhh',
       loc: 12,
+      type: 'v'
+    })
+  })
+
+  it('tags "const [...iii] = []"', function () {
+    assertTag({
+      tagname: 'iii',
+      loc: 13,
       type: 'v'
     })
   })

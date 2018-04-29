@@ -10,3 +10,4 @@ const {ccc, ddd} = require('./c')
 const [eee, fff] = []
 const [{ggg}] = []
 const {a: [hhh]} = {}
+const [...iii] = []
