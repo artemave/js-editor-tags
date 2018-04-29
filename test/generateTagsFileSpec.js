@@ -96,4 +96,12 @@ describe('tags', function () {
       type: 'v'
     })
   })
+
+  it('tags "const [, ...kkk] = []"', function () {
+    assertTag({
+      tagname: 'kkk',
+      loc: 14,
+      type: 'v'
+    })
+  })
 })

@@ -26,7 +26,7 @@ module.exports = function findTags (filename, source) {
   }
 
   function ArrayPattern ({elements}) {
-    return elements.map(handleVariableDeclaration)
+    return elements.filter(_ => _).map(handleVariableDeclaration)
   }
 
   function RestElement ({argument}) {

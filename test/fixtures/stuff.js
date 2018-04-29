@@ -11,3 +11,4 @@ const [eee, fff] = []
 const [{ggg}] = []
 const {a: [hhh]} = {}
 const [...iii] = []
+const [, ...kkk] = []
