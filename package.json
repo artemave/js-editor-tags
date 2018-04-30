@@ -1,9 +1,15 @@
 {
-  "name": "js-tags",
-  "version": "1.0.0",
+  "name": "js-editor-tags",
+  "version": "0.0.1",
   "description": "Generate ctags file based on code analysis",
   "main": "index.js",
   "license": "MIT",
+  "bin": "./index.js",
+  "repository": "github:artemave/js-editor-tags",
+  "scripts": {
+    "test": "mocha test/**/*Spec.js",
+    "ci": "standard && yarn test"
+  },
   "devDependencies": {
     "chai": "^4.1.2",
     "mocha": "^5.1.0",
@@ -18,10 +24,6 @@
   "standard": {
     "env": [
       "mocha"
-    ],
-    "ignore": [
-      "test/fixtures/stuff.js",
-      "test/fixtures/manualTest.js"
     ]
   }
 }

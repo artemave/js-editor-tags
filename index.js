@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 const {readFileSync, writeFileSync} = require('fs')
 const path = require('path')
 const findTags = require('./findTags')
@@ -41,8 +43,8 @@ module.exports = function (filesToTag) {
   tags.sort()
 
   const tagsBanner = [
-    '!_TAG_FILE_FORMAT	2	/extended format/',
-    '!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/'
+    '!_TAG_FILE_FORMAT	2	/extended format/', // eslint-disable-line
+    '!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/' // eslint-disable-line
   ]
   return tagsBanner.concat(tags)
 }

@@ -23,12 +23,12 @@ describe('tags', function () {
   it('tags functions', function () {
     assertTag({
       tagname: 'topLevelFunction',
-      loc: 1,
+      loc: 3,
       type: 'f'
     })
     assertTag({
       tagname: 'nestedFunction',
-      loc: 2,
+      loc: 4,
       type: 'f'
     })
   })
@@ -36,7 +36,7 @@ describe('tags', function () {
   it('tags "const bbb = 2"', function () {
     assertTag({
       tagname: 'bbb',
-      loc: 8,
+      loc: 10,
       type: 'v'
     })
   })
@@ -44,7 +44,7 @@ describe('tags', function () {
   it('tags "const {ccc} = {}"', function () {
     assertTag({
       tagname: 'ccc',
-      loc: 9,
+      loc: 11,
       type: 'v'
     })
   })
@@ -52,7 +52,7 @@ describe('tags', function () {
   it('tags "const {ccc, ddd} = {}"', function () {
     assertTag({
       tagname: 'ddd',
-      loc: 9,
+      loc: 11,
       type: 'v'
     })
   })
@@ -60,7 +60,7 @@ describe('tags', function () {
   it('tags "const [eee] = []"', function () {
     assertTag({
       tagname: 'eee',
-      loc: 10,
+      loc: 12,
       type: 'v'
     })
   })
@@ -68,7 +68,7 @@ describe('tags', function () {
   it('tags "const [eee, fff] = []"', function () {
     assertTag({
       tagname: 'fff',
-      loc: 10,
+      loc: 12,
       type: 'v'
     })
   })
@@ -76,7 +76,7 @@ describe('tags', function () {
   it('tags "const [{ggg}] = []"', function () {
     assertTag({
       tagname: 'ggg',
-      loc: 11,
+      loc: 13,
       type: 'v'
     })
   })
@@ -84,7 +84,7 @@ describe('tags', function () {
   it('tags "const {a: [hhh]} = {}"', function () {
     assertTag({
       tagname: 'hhh',
-      loc: 12,
+      loc: 14,
       type: 'v'
     })
   })
@@ -92,7 +92,7 @@ describe('tags', function () {
   it('tags "const [...iii] = []"', function () {
     assertTag({
       tagname: 'iii',
-      loc: 13,
+      loc: 15,
       type: 'v'
     })
   })
@@ -100,7 +100,7 @@ describe('tags', function () {
   it('tags "const [, ...kkk] = []"', function () {
     assertTag({
       tagname: 'kkk',
-      loc: 14,
+      loc: 16,
       type: 'v'
     })
   })
@@ -108,7 +108,7 @@ describe('tags', function () {
   it('tags class declarations', function () {
     assertTag({
       tagname: 'Stuff',
-      loc: 16,
+      loc: 18,
       type: 'c'
     })
   })
@@ -116,7 +116,7 @@ describe('tags', function () {
   it('tags methods', function () {
     assertTag({
       tagname: 'blah',
-      loc: 17,
+      loc: 19,
       type: 'm'
     })
   })

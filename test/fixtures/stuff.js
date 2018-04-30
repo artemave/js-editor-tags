@@ -1,3 +1,5 @@
+/* eslint-disable */
+
 function topLevelFunction () {
   function nestedFunction (arg) {
     return arg
