@@ -1,4 +1,4 @@
-js-editor-tags
+js-editor-tags [![Build Status](https://travis-ci.org/artemave/js-editor-tags.svg?branch=master)](https://travis-ci.org/artemave/js-editor-tags)
 -------
 
 Generate tags file for javascript codebase using static code analyses (babylon).
