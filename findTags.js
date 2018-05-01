@@ -6,7 +6,7 @@ const flatten = require('lowscore/flatten')
 module.exports = function findTags (filename, source) {
   const ast = babylon.parse(source, {
     sourceType: 'module',
-    plugins: ['jsx', 'flow']
+    plugins: ['jsx']
   })
   const result = []
 
@@ -73,18 +73,12 @@ module.exports = function findTags (filename, source) {
       collect({tagname, filename, loc: node.loc, type: 'i'})
     },
     ImportSpecifier ({node}) {
-      // id may be null for flow function declarations
-      if (node.id) {
-        let tagname = node.id.name
-        collect({tagname, filename, loc: node.loc, type: 'i'})
-      }
+      let tagname = node.local.name
+      collect({tagname, filename, loc: node.loc, type: 'i'})
     },
     FunctionDeclaration ({node}) {
-      // id may be null for flow function declarations
-      if (node.id) {
-        let tagname = node.id.name
-        collect({tagname, filename, loc: node.loc, type: 'f'})
-      }
+      let tagname = node.id.name
+      collect({tagname, filename, loc: node.loc, type: 'f'})
     }
   })
 

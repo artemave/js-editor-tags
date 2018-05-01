@@ -120,4 +120,41 @@ describe('tags', function () {
       type: 'm'
     })
   })
+
+  it('tags simple imports', function () {
+    assertTag({
+      tagname: 'lll',
+      loc: 22,
+      type: 'i'
+    })
+  })
+
+  it('tags "import {m} from "', function () {
+    assertTag({
+      tagname: 'mmm',
+      loc: 23,
+      type: 'i'
+    })
+  })
+
+  it('tags "import {m as n} from "', function () {
+    assertTag({
+      tagname: 'nnn',
+      loc: 24,
+      type: 'i'
+    })
+  })
+
+  it('tags "import {m as n, o as p} from "', function () {
+    assertTag({
+      tagname: 'ooo',
+      loc: 25,
+      type: 'i'
+    })
+    assertTag({
+      tagname: 'ppp',
+      loc: 25,
+      type: 'i'
+    })
+  })
 })

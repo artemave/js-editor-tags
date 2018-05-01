@@ -18,3 +18,8 @@ const [, ...kkk] = []
 class Stuff {
   blah () {}
 }
+
+import lll from 'lll'
+import {mmm} from 'mmm'
+import {mmm as nnn} from 'mmm'
+import {o as ooo, p as ppp} from 'ooo'
