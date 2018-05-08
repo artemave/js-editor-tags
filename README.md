@@ -11,3 +11,9 @@ The following will generate `tags` file in the current folder:
 npm i -g js-editor-tags
 git ls-files | js-editor-tags
 ```
+
+## Running tests
+
+```bash
+yarn test
+```

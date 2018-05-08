@@ -157,4 +157,12 @@ describe('tags', function () {
       type: 'i'
     })
   })
+
+  it('tags object methods', function () {
+    assertTag({
+      tagname: 'prop',
+      loc: 28,
+      type: 'm'
+    })
+  })
 })

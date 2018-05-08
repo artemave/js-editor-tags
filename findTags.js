@@ -54,14 +54,12 @@ module.exports = function findTags (filename, source) {
       collect({tagname, filename, loc: node.loc, type: 'c'})
     },
     ClassMethod ({node, parentPath}) {
-      debug('ClassMethod', JSON.stringify(node, null, 2))
       if (node.key.name !== 'constructor') {
         const tagname = node.key.name
         collect({tagname, filename, loc: node.loc, type: 'm'})
       }
     },
     VariableDeclarator ({node}) {
-      debug('VariableDeclarator', JSON.stringify(node, null, 2))
       collect(
         ...flatten(
           handleVariableDeclaration(node.id)
@@ -69,16 +67,21 @@ module.exports = function findTags (filename, source) {
       )
     },
     ImportDefaultSpecifier ({node}) {
-      let tagname = node.local.name
+      const tagname = node.local.name
       collect({tagname, filename, loc: node.loc, type: 'i'})
     },
     ImportSpecifier ({node}) {
-      let tagname = node.local.name
+      const tagname = node.local.name
       collect({tagname, filename, loc: node.loc, type: 'i'})
     },
     FunctionDeclaration ({node}) {
-      let tagname = node.id.name
+      const tagname = node.id.name
       collect({tagname, filename, loc: node.loc, type: 'f'})
+    },
+    ObjectMethod ({node}) {
+      const tagname = node.key.name
+      collect({tagname, filename, loc: node.key.loc, type: 'm'})
+      debug(JSON.stringify(node, null, 2))
     }
   })
 
