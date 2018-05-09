@@ -24,8 +24,9 @@ import {mmm} from 'mmm'
 import {mmm as nnn} from 'mmm'
 import {o as ooo, p as ppp} from 'ooo'
 
-const rrr = {
-  prop () {
+const pf = {
+  qqq () {
     return 1
-  }
+  },
+  rrr: 8
 }

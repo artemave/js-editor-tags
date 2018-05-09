@@ -160,9 +160,17 @@ describe('tags', function () {
 
   it('tags object methods', function () {
     assertTag({
-      tagname: 'prop',
+      tagname: 'qqq',
       loc: 28,
       type: 'm'
+    })
+  })
+
+  it('tags object properties', function () {
+    assertTag({
+      tagname: 'rrr',
+      loc: 31,
+      type: 'p'
     })
   })
 })

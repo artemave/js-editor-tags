@@ -81,7 +81,12 @@ module.exports = function findTags (filename, source) {
     ObjectMethod ({node}) {
       const tagname = node.key.name
       collect({tagname, filename, loc: node.key.loc, type: 'm'})
-      debug(JSON.stringify(node, null, 2))
+    },
+    ObjectProperty ({node}) {
+      if (!node.extra || !node.extra.shorthand) {
+        const tagname = node.key.name
+        collect({tagname, filename, loc: node.key.loc, type: 'p'})
+      }
     }
   })
 
