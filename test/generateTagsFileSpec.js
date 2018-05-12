@@ -3,7 +3,7 @@ const FsAdapter = require('../fsAdapter')
 const FsAdapterMemory = require('./fsAdapterMemory')
 const {expect} = require('chai')
 const path = require('path')
-const fixture = require('./fixture')
+const {source: fixture} = require('./fixture')
 
 describe('tags', function () {
   let tags, assertTag, generateTags

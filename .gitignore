@@ -1,3 +1,4 @@
 node_modules
 yarn-error.log
 test.js
+test/stuff.js
