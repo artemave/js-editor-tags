@@ -1,2 +1,5 @@
 language: node_js
 script: yarn ci
+env:
+  global:
+    - REAL_FS=1

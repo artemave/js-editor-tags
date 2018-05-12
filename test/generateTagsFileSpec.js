@@ -1,22 +1,38 @@
-const generateTags = require('..')
+const App = require('..')
+const FsAdapter = require('../fsAdapter')
+const FsAdapterMemory = require('./fsAdapterMemory')
 const {expect} = require('chai')
 const path = require('path')
+const fixture = require('./fixture')
 
 describe('tags', function () {
-  let tags, filename, assertTag
+  let tags, assertTag, generateTags
+  const fixtureFilePath = path.join(__dirname, 'stuff.js')
+  const tagsFilePath = path.join(__dirname, 'tags')
 
-  beforeEach(function () {
-    filename = path.join(__dirname, 'fixtures/stuff.js')
-    tags = generateTags([filename])
+  beforeEach(async function () {
+    const fs = process.env.REAL_FS ? new FsAdapter() : new FsAdapterMemory()
+    const app = new App({fs, tagsFilePath})
+
+    await fs.writeFile(fixtureFilePath, fixture)
+    await fs.removeFile(tagsFilePath)
+
+    generateTags = async (filesToTag) => {
+      await app.run(filesToTag)
+      const tags = await fs.readFile(tagsFilePath)
+      return tags.split('\n')
+    }
+
+    tags = await generateTags([fixtureFilePath])
 
     assertTag = ({tagname, loc, type}) => {
-      const expected = `${tagname}\t${filename}\t${loc}\t"\t${type}`
+      const expected = `${tagname}\t${fixtureFilePath}\t${loc}\t"\t${type}`
       expect(tags).to.deep.include(expected, JSON.stringify(tags, null, 2))
     }
   })
 
-  it('ignores non js files', function () {
-    tags = generateTags([path.join(__dirname, 'fixtures/index.html')])
+  it('ignores non js files', async function () {
+    tags = await generateTags([path.join(__dirname, 'index.html')])
     expect(tags.length).to.eq(2)
   })
 

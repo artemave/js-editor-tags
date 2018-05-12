@@ -1,4 +1,4 @@
-/* eslint-disable */
+module.exports = `
 
 function topLevelFunction () {
   function nestedFunction (arg) {
@@ -30,3 +30,4 @@ const pf = {
   },
   rrr: 8
 }
+`

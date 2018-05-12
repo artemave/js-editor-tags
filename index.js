@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-const {readFileSync, writeFileSync} = require('fs')
+const FsAdapter = require('./fsAdapter')
 const path = require('path')
 const findTags = require('./findTags')
 
@@ -32,29 +32,42 @@ function jsOnly (fileName) {
   return fileName.match(/\.jsx?$/)
 }
 
-module.exports = function (filesToTag) {
-  const tags = []
-  filesToTag.filter(jsOnly).forEach(fileName => {
-    const source = readFileSync(fileName, 'utf-8')
-    tags.push(
-      ...findTags(fileName, source).map(formatTag)
-    )
-  })
-  tags.sort()
+class App {
+  constructor ({fs, tagsFilePath}) {
+    this.fs = fs
+    this.tagsFilePath = tagsFilePath
+  }
 
-  const tagsBanner = [
-    '!_TAG_FILE_FORMAT	2	/extended format/', // eslint-disable-line
-    '!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/' // eslint-disable-line
-  ]
-  return tagsBanner.concat(tags)
+  async run (filesToTag) {
+    const tags = []
+
+    for (let fileName of filesToTag.filter(jsOnly)) {
+      const source = await this.fs.readFile(fileName)
+      tags.push(
+        ...findTags(fileName, source).map(formatTag)
+      )
+    }
+    tags.sort()
+
+    tags.unshift(
+      '!_TAG_FILE_FORMAT	2	/extended format/', // eslint-disable-line
+      '!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/' // eslint-disable-line
+    )
+    await this.fs.writeFile(this.tagsFilePath, tags.join('\n'))
+  }
 }
 
+module.exports = App
+
 if (!module.parent) {
+  const app = new App({
+    fs: new FsAdapter(),
+    tagsFilePath: path.join(process.cwd(), 'tags')
+  })
   readFileListFromStdin().then(filesToTag => {
-    return module.exports(filesToTag)
-  }).then(tags => {
+    return app.run(filesToTag)
+  }).then(() => {
     console.info('Success!')
-    writeFileSync(path.join(process.cwd(), '/tags'), tags.join('\n'))
     process.exit()
   }).catch(e => {
     console.error(e)

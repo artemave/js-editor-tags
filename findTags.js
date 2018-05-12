@@ -68,24 +68,29 @@ module.exports = function findTags (filename, source) {
     },
     ImportDefaultSpecifier ({node}) {
       const tagname = node.local.name
-      collect({tagname, filename, loc: node.loc, type: 'i'})
+      const loc = node.loc
+      collect({tagname, filename, loc, type: 'i'})
     },
     ImportSpecifier ({node}) {
       const tagname = node.local.name
-      collect({tagname, filename, loc: node.loc, type: 'i'})
+      const loc = node.loc
+      collect({tagname, filename, loc, type: 'i'})
     },
     FunctionDeclaration ({node}) {
       const tagname = node.id.name
-      collect({tagname, filename, loc: node.loc, type: 'f'})
+      const loc = node.loc
+      collect({tagname, filename, loc, type: 'f'})
     },
     ObjectMethod ({node}) {
       const tagname = node.key.name
-      collect({tagname, filename, loc: node.key.loc, type: 'm'})
+      const loc = node.key.loc
+      collect({tagname, filename, loc, type: 'm'})
     },
     ObjectProperty ({node}) {
       if (!node.extra || !node.extra.shorthand) {
         const tagname = node.key.name
-        collect({tagname, filename, loc: node.key.loc, type: 'p'})
+        const loc = node.key.loc
+        collect({tagname, filename, loc, type: 'p'})
       }
     }
   })
