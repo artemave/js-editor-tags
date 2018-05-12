@@ -26,7 +26,7 @@ describe('tags', function () {
     tags = await generateTags([fixtureFilePath])
 
     assertTag = ({tagname, loc, type}) => {
-      const expected = `${tagname}\t${fixtureFilePath}\t${loc}\t"\t${type}`
+      const expected = `${tagname}\ttest/stuff.js\t${loc}\t"\t${type}`
       expect(tags).to.deep.include(expected, JSON.stringify(tags, null, 2))
     }
   })

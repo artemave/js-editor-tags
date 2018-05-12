@@ -3,16 +3,25 @@
 const FsAdapter = require('./fsAdapter')
 const path = require('path')
 const findTags = require('./findTags')
+const argv = require('yargs')
+  .boolean('u')
+  .describe('u', 'Update existing tags file')
+  .argv
 
 function formatTag (tag) {
   let line = [
     tag.tagname,
     tag.filename,
-    tag.loc.start.line,
+    tag.line,
     '"',
     tag.type
   ]
   return line.join('\t')
+}
+
+function parseTag (tagString) {
+  const [tagname, filename, line,, type] = tagString.split('\t')
+  return {tagname, filename, line, type}
 }
 
 async function readFileListFromStdin () {
@@ -32,28 +41,56 @@ function jsOnly (fileName) {
   return fileName.match(/\.jsx?$/)
 }
 
+function toRelative (path) {
+  return path.replace(process.cwd() + '/', '')
+}
+
+function byTagname (a, b) {
+  if (a.tagname < b.tagname) {
+    return -1
+  }
+  if (a.tagname > b.tagname) {
+    return 1
+  }
+  return 0
+}
+
 class App {
   constructor ({fs, tagsFilePath}) {
     this.fs = fs
     this.tagsFilePath = tagsFilePath
   }
 
-  async run (filesToTag) {
-    const tags = []
+  async run (filesToTag, {update} = {}) {
+    const tags = update ? await this._existingTagsToKeep(filesToTag) : []
 
     for (let fileName of filesToTag.filter(jsOnly)) {
       const source = await this.fs.readFile(fileName)
       tags.push(
-        ...findTags(fileName, source).map(formatTag)
+        ...findTags(toRelative(fileName), source)
       )
     }
-    tags.sort()
-
-    tags.unshift(
+    tags.sort(byTagname)
+    const formattedTags = tags.map(formatTag)
+    formattedTags.unshift(
       '!_TAG_FILE_FORMAT	2	/extended format/', // eslint-disable-line
       '!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/' // eslint-disable-line
     )
-    await this.fs.writeFile(this.tagsFilePath, tags.join('\n'))
+    await this.fs.writeFile(this.tagsFilePath, formattedTags.join('\n'))
+  }
+
+  async _existingTagsToKeep (filesToTag) {
+    const existingTagsFile = await this.fs.readFile(this.tagsFilePath)
+    if (existingTagsFile) {
+      const existingTags = existingTagsFile.split('\n').filter(tag => {
+        return !tag.match('!_TAG_FILE') && tag !== ''
+      })
+      return existingTags.filter(tag => {
+        return !filesToTag.map(toRelative).some(path => tag.match(path))
+      }).map(parseTag)
+    } else {
+      return []
+    }
   }
 }
 
@@ -64,10 +101,10 @@ if (!module.parent) {
     fs: new FsAdapter(),
     tagsFilePath: path.join(process.cwd(), 'tags')
   })
+
   readFileListFromStdin().then(filesToTag => {
-    return app.run(filesToTag)
+    return app.run(filesToTag, {update: argv.u})
   }).then(() => {
-    console.info('Success!')
     process.exit()
   }).catch(e => {
     console.error(e)

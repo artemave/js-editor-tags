@@ -15,7 +15,7 @@ module.exports = function findTags (filename, source) {
   }
 
   function Identifier ({name, loc}) {
-    return [{tagname: name, loc: loc, type: 'v'}]
+    return [{tagname: name, line: loc.start.line, type: 'v'}]
   }
 
   function ObjectPattern ({properties}) {
@@ -51,12 +51,12 @@ module.exports = function findTags (filename, source) {
   traverse(ast, {
     ClassDeclaration ({node}) {
       const tagname = node.id.name
-      collect({tagname, filename, loc: node.loc, type: 'c'})
+      collect({tagname, filename, line: node.loc.start.line, type: 'c'})
     },
     ClassMethod ({node, parentPath}) {
       if (node.key.name !== 'constructor') {
         const tagname = node.key.name
-        collect({tagname, filename, loc: node.loc, type: 'm'})
+        collect({tagname, filename, line: node.loc.start.line, type: 'm'})
       }
     },
     VariableDeclarator ({node}) {
@@ -68,29 +68,29 @@ module.exports = function findTags (filename, source) {
     },
     ImportDefaultSpecifier ({node}) {
       const tagname = node.local.name
-      const loc = node.loc
-      collect({tagname, filename, loc, type: 'i'})
+      const line = node.loc.start.line
+      collect({tagname, filename, line, type: 'i'})
     },
     ImportSpecifier ({node}) {
       const tagname = node.local.name
-      const loc = node.loc
-      collect({tagname, filename, loc, type: 'i'})
+      const line = node.loc.start.line
+      collect({tagname, filename, line, type: 'i'})
     },
     FunctionDeclaration ({node}) {
       const tagname = node.id.name
-      const loc = node.loc
-      collect({tagname, filename, loc, type: 'f'})
+      const line = node.loc.start.line
+      collect({tagname, filename, line, type: 'f'})
     },
     ObjectMethod ({node}) {
       const tagname = node.key.name
-      const loc = node.key.loc
-      collect({tagname, filename, loc, type: 'm'})
+      const line = node.key.loc.start.line
+      collect({tagname, filename, line, type: 'm'})
     },
     ObjectProperty ({node}) {
       if (!node.extra || !node.extra.shorthand) {
         const tagname = node.key.name
-        const loc = node.key.loc
-        collect({tagname, filename, loc, type: 'p'})
+        const line = node.key.loc.start.line
+        collect({tagname, filename, line, type: 'p'})
       }
     }
   })
