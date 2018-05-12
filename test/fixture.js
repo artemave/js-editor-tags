@@ -30,14 +30,12 @@ import {o as ooo, p as ppp} from 'ooo'
 const pf = {
   qqq () {
     return 1
-  },
-  rrr: 8
+  }
 }
 `,
   expected: `!_TAG_FILE_FORMAT	2	/extended format/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
 Stuff	test/stuff.js	18	"	c
-a	test/stuff.js	14	"	p
 bbb	test/stuff.js	10	"	v
 blah	test/stuff.js	19	"	m
 ccc	test/stuff.js	11	"	v
@@ -56,6 +54,5 @@ ooo	test/stuff.js	25	"	i
 pf	test/stuff.js	27	"	v
 ppp	test/stuff.js	25	"	i
 qqq	test/stuff.js	28	"	m
-rrr	test/stuff.js	31	"	p
 topLevelFunction	test/stuff.js	3	"	f`
 }

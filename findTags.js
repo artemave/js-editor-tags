@@ -85,13 +85,6 @@ module.exports = function findTags (filename, source) {
       const tagname = node.key.name
       const line = node.key.loc.start.line
       collect({tagname, filename, line, type: 'm'})
-    },
-    ObjectProperty ({node}) {
-      if (!node.extra || !node.extra.shorthand) {
-        const tagname = node.key.name
-        const line = node.key.loc.start.line
-        collect({tagname, filename, line, type: 'p'})
-      }
     }
   })
 
