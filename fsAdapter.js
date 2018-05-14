@@ -1,4 +1,4 @@
-const fs = require('fs').promises
+const fs = require('fs-extra')
 
 module.exports = class FsAdapter {
   async writeFile (path, content) {
