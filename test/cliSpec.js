@@ -66,4 +66,13 @@ describe('cli', function () {
       expect(tags).to.eq(expectedNewTags)
     })
   })
+
+  it('skips source file that contains invalid js', async function () {
+    const fixtureFilePath2 = path.join(__dirname, 'stuff2.js')
+    await fs.writeFile(fixtureFilePath, 'const a = 2')
+    await fs.writeFile(fixtureFilePath2, 'function blah (a,a) {}')
+    await app.run([fixtureFilePath, fixtureFilePath2])
+    const tags = await fs.readFile(tagsFilePath)
+    expect(tags).to.eq(expectedNewTags)
+  })
 })

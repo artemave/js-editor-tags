@@ -65,10 +65,14 @@ class App {
     const tags = update ? await this._existingTagsToKeep(filesToTag) : []
 
     for (let fileName of filesToTag.filter(jsOnly)) {
-      const source = await this.fs.readFile(fileName)
-      tags.push(
-        ...findTags(toRelative(fileName), source)
-      )
+      try {
+        const source = await this.fs.readFile(fileName)
+        tags.push(
+          ...findTags(toRelative(fileName), source)
+        )
+      } catch (e) {
+        console.warn(`Skipping ${fileName}: ${e.message}`)
+      }
     }
     tags.sort(byTagname)
     const formattedTags = tags.map(formatTag)
