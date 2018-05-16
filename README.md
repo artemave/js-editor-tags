@@ -12,10 +12,10 @@ npm i -g js-editor-tags
 git ls-files | js-editor-tags
 ```
 
-You can also automatically keep tags file up to date:
+You can also automatically keep tags file up to date. For example, using [fswatch](https://github.com/emcrisostomo/fswatch):
 
 ```bash
-fswatch -0 -r . | while read -d "" file_path; do git ls-files $file_path; done | grep -v -E '^$' | js-editor-tags -u
+fswatch -0 -r . | while read -d "" file_path; do git ls-files $file_path; done | js-editor-tags -u
 ```
 
 ## Running tests

@@ -1,5 +1,7 @@
 #!/usr/bin/env node
 
+const debug = require('debug')('js-tags')
+const readline = require('readline')
 const FsAdapter = require('./fsAdapter')
 const path = require('path')
 const findTags = require('./findTags')
@@ -24,21 +26,8 @@ function parseTag (tagString) {
   return {tagname, filename, line, type}
 }
 
-async function readFileListFromStdin () {
-  const stdin = process.openStdin()
-  let data = ''
-  return new Promise((resolve, reject) => {
-    stdin.on('end', () => {
-      resolve(data.split('\n'))
-    })
-    stdin.on('data', (chunk) => {
-      data += chunk
-    })
-  })
-}
-
 function jsOnly (fileName) {
-  return fileName.match(/\.jsx?$/)
+  return fileName.match(/\.(mjs|jsx?)$/)
 }
 
 function toRelative (path) {
@@ -65,6 +54,7 @@ class App {
     const tags = update ? await this._existingTagsToKeep(filesToTag) : []
 
     for (let fileName of filesToTag.filter(jsOnly)) {
+      debug(fileName)
       try {
         const source = await this.fs.readFile(fileName)
         tags.push(
@@ -106,12 +96,28 @@ if (!module.parent) {
     tagsFilePath: path.join(process.cwd(), 'tags')
   })
 
-  readFileListFromStdin().then(filesToTag => {
-    return app.run(filesToTag, {update: argv.u})
-  }).then(() => {
-    process.exit()
-  }).catch(e => {
+  const rl = readline.createInterface({
+    input: process.stdin
+  })
+
+  const filesToTag = []
+
+  try {
+    rl.on('line', async fileToTag => {
+      if (argv.u) {
+        await app.run([fileToTag], {update: true})
+      } else {
+        filesToTag.push(fileToTag)
+      }
+    })
+
+    if (!argv.u) {
+      rl.on('close', async () => {
+        await app.run(filesToTag)
+      })
+    }
+  } catch (e) {
     console.error(e)
     process.exit(1)
-  })
+  }
 }
