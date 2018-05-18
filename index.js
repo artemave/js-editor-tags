@@ -5,6 +5,7 @@ const readline = require('readline')
 const FsAdapter = require('./fsAdapter')
 const path = require('path')
 const findTags = require('./findTags')
+const uniq = require('lowscore/uniq')
 const argv = require('yargs')
   .boolean('u')
   .describe('u', 'Update existing tags file')
@@ -88,6 +89,45 @@ class App {
   }
 }
 
+class BatchRunner {
+  constructor () {
+    this.batchArgs = []
+  }
+
+  addToBatch (arg) {
+    this.batchArgs.push(arg)
+    if (this.collectingBatch) {
+      clearTimeout(this.collectingBatch)
+    }
+    this.collectingBatch = setTimeout(() => {
+      delete this.collectingBatch
+    }, 500)
+  }
+
+  quit () {
+    this.quitNow = true
+  }
+
+  async process (fn) {
+    return new Promise((resolve, reject) => {
+      setInterval(async () => {
+        if (!this.processing && !this.collectingBatch && this.batchArgs.length) {
+          const batchArgs = uniq(this.batchArgs)
+          this.batchArgs = []
+
+          this.processing = true
+          await fn(batchArgs)
+          delete this.processing
+
+          if (this.quitNow) {
+            resolve()
+          }
+        }
+      }, 90)
+    })
+  }
+}
+
 module.exports = App
 
 if (!module.parent) {
@@ -100,24 +140,22 @@ if (!module.parent) {
     input: process.stdin
   })
 
-  const filesToTag = []
+  const batchRunner = new BatchRunner()
 
-  try {
-    rl.on('line', async fileToTag => {
-      if (argv.u) {
-        await app.run([fileToTag], {update: true})
-      } else {
-        filesToTag.push(fileToTag)
-      }
-    })
+  rl.on('line', async fileToTag => {
+    batchRunner.addToBatch(fileToTag)
+  })
 
-    if (!argv.u) {
-      rl.on('close', async () => {
-        await app.run(filesToTag)
-      })
-    }
-  } catch (e) {
+  rl.on('close', () => {
+    batchRunner.quit()
+  })
+
+  batchRunner.process(async (filesToTag) => {
+    await app.run(filesToTag, {update: argv.u})
+  }).then(() => {
+    process.exit()
+  }).catch(e => {
     console.error(e)
     process.exit(1)
-  }
+  })
 }
