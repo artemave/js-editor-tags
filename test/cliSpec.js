@@ -5,23 +5,27 @@ const {expect} = require('chai')
 const path = require('path')
 const {expected, source} = require('./fixture')
 
+// /\%12l\%34c/ line and column
+
 /* eslint-disable */
 const existingTags = `
 !_TAG_FILE_FORMAT	2	/extended format/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
-App	test/stuff.js	35	"	c
-App	test/generateTagsFileSpec.js	1	"	v
-blah	test/stuff.js	36	"	v
+App	test/stuff.js	35;"	c
+App	test/generateTagsFileSpec.js	1;"	v
+blah	test/stuff.js	36;"	v
+private	package.json	/^  "private": true,$/;"	b
 `
 
 const expectedUpdatedTags = `!_TAG_FILE_FORMAT	2	/extended format/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
-App	test/generateTagsFileSpec.js	1	"	v
-a	test/stuff.js	1	"	v`
+App	test/generateTagsFileSpec.js	1;"	v
+a	test/stuff.js	1;"	v
+private	package.json	/^  "private": true,$/;"	b`
 
 const expectedNewTags = `!_TAG_FILE_FORMAT	2	/extended format/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
-a	test/stuff.js	1	"	v`
+a	test/stuff.js	1;"	v`
 /* eslint-enable */
 
 describe('cli', function () {

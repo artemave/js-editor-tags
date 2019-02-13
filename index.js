@@ -5,26 +5,27 @@ const readline = require('readline')
 const FsAdapter = require('./fsAdapter')
 const path = require('path')
 const findTags = require('./findTags')
-const uniq = require('lowscore/uniq')
+const BatchRunner = require('./batchRunner')
 const argv = require('yargs')
   .boolean('u')
   .describe('u', 'Update existing tags file')
   .argv
 
 function formatTag (tag) {
+  const exCmd = tag.exCmd || `${tag.line};"`
+  const rest = tag.rest || [tag.type]
   let line = [
     tag.tagname,
     tag.filename,
-    tag.line,
-    '"',
-    tag.type
+    exCmd,
+    ...rest
   ]
   return line.join('\t')
 }
 
 function parseTag (tagString) {
-  const [tagname, filename, line,, type] = tagString.split('\t')
-  return {tagname, filename, line, type}
+  const [tagname, filename, exCmd, ...rest] = tagString.split('\t')
+  return {tagname, filename, exCmd, rest}
 }
 
 function jsOnly (fileName) {
@@ -46,7 +47,7 @@ function byTagname (a, b) {
 }
 
 class App {
-  constructor ({fs, tagsFilePath}) {
+  constructor ({fs = new FsAdapter(), tagsFilePath}) {
     this.fs = fs
     this.tagsFilePath = tagsFilePath
   }
@@ -89,50 +90,10 @@ class App {
   }
 }
 
-class BatchRunner {
-  constructor () {
-    this.batchArgs = []
-  }
-
-  addToBatch (arg) {
-    this.batchArgs.push(arg)
-    if (this.collectingBatch) {
-      clearTimeout(this.collectingBatch)
-    }
-    this.collectingBatch = setTimeout(() => {
-      delete this.collectingBatch
-    }, 500)
-  }
-
-  quit () {
-    this.quitNow = true
-  }
-
-  async process (fn) {
-    return new Promise((resolve, reject) => {
-      setInterval(async () => {
-        if (!this.processing && !this.collectingBatch && this.batchArgs.length) {
-          const batchArgs = uniq(this.batchArgs)
-          this.batchArgs = []
-
-          this.processing = true
-          await fn(batchArgs)
-          delete this.processing
-
-          if (this.quitNow) {
-            resolve()
-          }
-        }
-      }, 90)
-    })
-  }
-}
-
 module.exports = App
 
 if (!module.parent) {
   const app = new App({
-    fs: new FsAdapter(),
     tagsFilePath: path.join(process.cwd(), 'tags')
   })
 
@@ -142,7 +103,7 @@ if (!module.parent) {
 
   const batchRunner = new BatchRunner()
 
-  rl.on('line', async fileToTag => {
+  rl.on('line', fileToTag => {
     batchRunner.addToBatch(fileToTag)
   })
 
