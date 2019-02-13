@@ -6,10 +6,19 @@ const FsAdapter = require('./fsAdapter')
 const path = require('path')
 const findTags = require('./findTags')
 const BatchRunner = require('./batchRunner')
+const Shell = require('./shell')
 const argv = require('yargs')
-  .boolean('u')
-  .describe('u', 'Update existing tags file')
-  .argv
+  .options({
+    u: {
+      alias: 'update',
+      describe: 'Update existing tags file instead of creating from scratch',
+      type: 'boolean'
+    },
+    'git-files-only': {
+      describe: 'Only tag files that are tracked in git',
+      type: 'boolean'
+    }
+  }).argv
 
 function formatTag (tag) {
   const exCmd = tag.exCmd || `${tag.line};"`
@@ -93,30 +102,39 @@ class App {
 module.exports = App
 
 if (!module.parent) {
-  const app = new App({
-    tagsFilePath: path.join(process.cwd(), 'tags')
-  })
+  (async () => {
+    const app = new App({
+      tagsFilePath: path.join(process.cwd(), 'tags')
+    })
 
-  const rl = readline.createInterface({
-    input: process.stdin
-  })
+    try {
+      if (process.stdin.isTTY) {
+        const sh = new Shell()
+        const filesToTag = await sh('{ git ls-files & git ls-files -o --exclude-standard; } | sort -u')
+        await app.run(filesToTag, {update: argv.u})
+      } else {
+        const rl = readline.createInterface({
+          input: process.stdin
+        })
 
-  const batchRunner = new BatchRunner()
+        const batchRunner = new BatchRunner()
 
-  rl.on('line', fileToTag => {
-    batchRunner.addToBatch(fileToTag)
-  })
+        rl.on('line', fileToTag => {
+          batchRunner.addToBatch(fileToTag)
+        })
 
-  rl.on('close', () => {
-    batchRunner.quit()
-  })
+        rl.on('close', () => {
+          batchRunner.quit()
+        })
 
-  batchRunner.process(async (filesToTag) => {
-    await app.run(filesToTag, {update: argv.u})
-  }).then(() => {
+        await batchRunner.process(async (filesToTag) => {
+          await app.run(filesToTag, {update: argv.u})
+        })
+      }
+    } catch (e) {
+      console.error(e)
+      process.exit(1)
+    }
     process.exit()
-  }).catch(e => {
-    console.error(e)
-    process.exit(1)
-  })
+  })()
 }
