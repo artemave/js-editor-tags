@@ -1,12 +1,16 @@
-const babylon = require('babylon')
-const {default: traverse} = require('babel-traverse')
+const {parse} = require('@babel/parser')
+const traverse = require('@babel/traverse').default
 const debug = require('debug')('js-tags')
 const flatten = require('lowscore/flatten')
 
 module.exports = function findTags (filename, source) {
-  const ast = babylon.parse(source, {
-    sourceType: 'module',
-    plugins: ['jsx']
+  const ast = parse(source, {
+    sourceType: 'unambiguous',
+    plugins: [
+      'jsx',
+      'classProperties',
+      ['decorators', { decoratorsBeforeExport: true }]
+    ]
   })
   const result = []
 
