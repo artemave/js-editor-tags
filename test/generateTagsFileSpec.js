@@ -1,4 +1,4 @@
-const App = require('..')
+const App = require('../app')
 const FsAdapter = require('../fsAdapter')
 const FsAdapterMemory = require('./fsAdapterMemory')
 const {expect} = require('chai')
