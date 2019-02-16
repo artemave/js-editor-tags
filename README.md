@@ -20,6 +20,9 @@ js-editor-tags # add --no-git-files-only if you really want ALL files
 # update existing `tags` file instead of regenerating it
 js-editor-tags -u
 
+# generate `tags` file and keep it up to date as the files change
+js-editor-tags -w
+
 # ultimately, you can just pipe in a list of files to tag
 git ls-files | js-editor-tags
 

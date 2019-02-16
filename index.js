@@ -4,18 +4,24 @@ const debug = require('debug')('js-tags')
 const readline = require('readline')
 const FsAdapter = require('./fsAdapter')
 const path = require('path')
+const chokidar = require('chokidar')
 const findTags = require('./findTags')
 const BatchRunner = require('./batchRunner')
 const Shell = require('./shell')
 const argv = require('yargs')
   .options({
-    u: {
-      alias: 'update',
+    update: {
+      alias: 'u',
       describe: 'Update existing tags file instead of creating from scratch',
       type: 'boolean'
     },
     'git-files-only': {
       describe: 'Only tag files that are tracked in git',
+      type: 'boolean'
+    },
+    watch: {
+      alias: 'w',
+      describe: 'Watch files in changes and update tags file',
       type: 'boolean'
     }
   }).argv
@@ -37,7 +43,7 @@ function parseTag (tagString) {
   return {tagname, filename, exCmd, rest}
 }
 
-function jsOnly (fileName) {
+function isJsFile (fileName) {
   return fileName.match(/\.(mjs|jsx?)$/)
 }
 
@@ -62,17 +68,24 @@ class App {
   }
 
   async run (filesToTag, {update} = {}) {
-    const tags = update ? await this._existingTagsToKeep(filesToTag) : []
+    let tags = update ? await this._existingTagsToKeep(filesToTag) : []
 
-    for (let fileName of filesToTag.filter(jsOnly)) {
-      debug(fileName)
+    for (let path of filesToTag.filter(isJsFile)) {
+      debug('tagging %s', path)
       try {
-        const source = await this.fs.readFile(fileName)
+        const source = await this.fs.readFile(path)
         tags.push(
-          ...findTags(toRelative(fileName), source)
+          ...findTags(toRelative(path), source)
         )
       } catch (e) {
-        console.warn(`Skipping ${fileName}: ${e.message}`)
+        if (e.code === 'ENOENT') {
+          debug(`deleting tags for ${path}`)
+          tags = tags.filter(tag => {
+            return tag.filename !== path
+          })
+        } else {
+          console.warn(`Error opening ${path}: ${e.message}`)
+        }
       }
     }
     tags.sort(byTagname)
@@ -103,21 +116,43 @@ module.exports = App
 
 if (!module.parent) {
   (async () => {
-    const app = new App({
-      tagsFilePath: path.join(process.cwd(), 'tags')
-    })
-
     try {
+      const app = new App({
+        tagsFilePath: path.join(process.cwd(), 'tags')
+      })
+      const batchRunner = new BatchRunner()
+
       if (process.stdin.isTTY) {
         const sh = new Shell()
-        const filesToTag = await sh('{ git ls-files & git ls-files -o --exclude-standard; } | sort -u')
-        await app.run(filesToTag, {update: argv.u})
+
+        const filesToTag = async () => {
+          // TODO: handle --no-git-files-only
+          // the second `git status` is to include deleted staged files
+          const files = await sh('{ git ls-files & git status --porcelain -uall | sed s/^...//; } | sort -u')
+          return files
+        }
+
+        await app.run(await filesToTag(), argv)
+
+        if (argv.watch) {
+          chokidar.watch(process.cwd(), {
+            ignored: /node_modules/,
+            cwd: process.cwd(),
+            ignoreInitial: true
+          }).on('all', async (event, path) => {
+            debug('%s %s', event, path)
+            if (event.match(/add|change|unlink/) && (await filesToTag()).includes(path)) {
+              batchRunner.addToBatch(path)
+            }
+          })
+          await batchRunner.process(async (filesToTag) => {
+            await app.run(filesToTag, Object.assign({}, argv, {update: true}))
+          })
+        }
       } else {
         const rl = readline.createInterface({
           input: process.stdin
         })
-
-        const batchRunner = new BatchRunner()
 
         rl.on('line', fileToTag => {
           batchRunner.addToBatch(fileToTag)
@@ -126,9 +161,8 @@ if (!module.parent) {
         rl.on('close', () => {
           batchRunner.quit()
         })
-
         await batchRunner.process(async (filesToTag) => {
-          await app.run(filesToTag, {update: argv.u})
+          await app.run(filesToTag, argv)
         })
       }
     } catch (e) {
