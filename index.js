@@ -2,6 +2,7 @@
 
 const debug = require('debug')('js-tags')
 const readline = require('readline')
+const globToRegExp = require('glob-to-regexp')
 const FsAdapter = require('./fsAdapter')
 const path = require('path')
 const chokidar = require('chokidar')
@@ -23,6 +24,11 @@ const argv = require('yargs')
       alias: 'w',
       describe: 'Watch files in changes and update tags file',
       type: 'boolean'
+    },
+    ignore: {
+      array: true,
+      describe: 'Ignore path (supports glob)',
+      default: []
     }
   }).argv
 
@@ -112,6 +118,16 @@ class App {
   }
 }
 
+function notIgnored (path) {
+  const patterns = argv.ignore.map((p) => {
+    if (p.match(/\*/)) {
+      return globToRegExp(p, {globstar: true})
+    }
+    return new RegExp(`^${p}(?=/|$)`)
+  })
+  return !patterns.some(p => p.test(path))
+}
+
 module.exports = App
 
 if (!module.parent) {
@@ -127,9 +143,9 @@ if (!module.parent) {
 
         const filesToTag = async () => {
           // TODO: handle --no-git-files-only
-          // the second `git status` is to include deleted staged files
+          // `git status` is to include deleted staged files
           const files = await sh('{ git ls-files & git status --porcelain -uall | sed s/^...//; } | sort -u')
-          return files
+          return files.filter(notIgnored)
         }
 
         await app.run(await filesToTag(), argv)
@@ -145,8 +161,8 @@ if (!module.parent) {
               batchRunner.addToBatch(path)
             }
           })
-          await batchRunner.process(async (filesToTag) => {
-            await app.run(filesToTag, Object.assign({}, argv, {update: true}))
+          await batchRunner.process(async (paths) => {
+            await app.run(paths, Object.assign({}, argv, {update: true}))
           })
         }
       } else {
@@ -161,8 +177,8 @@ if (!module.parent) {
         rl.on('close', () => {
           batchRunner.quit()
         })
-        await batchRunner.process(async (filesToTag) => {
-          await app.run(filesToTag, argv)
+        await batchRunner.process(async (paths) => {
+          await app.run(paths, argv)
         })
       }
     } catch (e) {

@@ -23,6 +23,9 @@ js-editor-tags -u
 # generate `tags` file and keep it up to date as the files change
 js-editor-tags -w
 
+# if you keep compiled js in git, you might want to exlude it
+js-editor-tags --ignore "dist" --ignore "build"
+
 # ultimately, you can just pipe in a list of files to tag
 git ls-files | js-editor-tags
 
