@@ -104,16 +104,19 @@ class App {
   }
 
   async _existingTagsToKeep (filesToTag) {
-    const existingTagsFile = await this.fs.readFile(this.tagsFilePath)
-    if (existingTagsFile) {
+    try {
+      const existingTagsFile = await this.fs.readFile(this.tagsFilePath)
       const existingTags = existingTagsFile.split('\n').filter(tag => {
         return !tag.match('!_TAG_FILE') && tag !== ''
       })
       return existingTags.filter(tag => {
         return !filesToTag.map(toRelative).some(path => tag.match(path))
       }).map(parseTag)
-    } else {
-      return []
+    } catch (e) {
+      if (e.code === 'ENOENT') {
+        return []
+      }
+      throw e
     }
   }
 }

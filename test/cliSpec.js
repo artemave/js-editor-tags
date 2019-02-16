@@ -15,17 +15,26 @@ App	test/stuff.js	35;"	c
 App	test/generateTagsFileSpec.js	1;"	v
 blah	test/stuff.js	36;"	v
 private	package.json	/^  "private": true,$/;"	b
+public	/some/non/existant/file.js	/^  "public": true,$/;"	b
 `
 
 const expectedUpdatedTags = `!_TAG_FILE_FORMAT	2	/extended format/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
 App	test/generateTagsFileSpec.js	1;"	v
 a	test/stuff.js	1;"	v
-private	package.json	/^  "private": true,$/;"	b`
+private	package.json	/^  "private": true,$/;"	b
+public	/some/non/existant/file.js	/^  "public": true,$/;"	b`
 
 const expectedNewTags = `!_TAG_FILE_FORMAT	2	/extended format/
 !_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
 a	test/stuff.js	1;"	v`
+
+const expectedUpdatedTags2 = `!_TAG_FILE_FORMAT	2	/extended format/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+App	test/stuff.js	35;"	c
+App	test/generateTagsFileSpec.js	1;"	v
+blah	test/stuff.js	36;"	v
+private	package.json	/^  "private": true,$/;"	b`
 /* eslint-enable */
 
 describe('cli', function () {
@@ -33,12 +42,13 @@ describe('cli', function () {
   const tagsFilePath = path.join(__dirname, 'tags')
   const fixtureFilePath = path.join(__dirname, 'stuff.js')
 
-  beforeEach(function () {
+  beforeEach(async function () {
     fs = process.env.REAL_FS ? new FsAdapter() : new FsAdapterMemory()
+    await fs.removeFile(tagsFilePath)
     app = new App({fs, tagsFilePath})
   })
 
-  it('regenates tags file by default', async function () {
+  it('regenerates tags file by default', async function () {
     await fs.writeFile(tagsFilePath, existingTags)
     await fs.writeFile(fixtureFilePath, source)
 
@@ -62,12 +72,22 @@ describe('cli', function () {
         const tags = await fs.readFile(tagsFilePath)
         expect(tags).to.eq(expectedUpdatedTags)
       })
+
+      context('file to tag does not exist', function () {
+        it('removes tag entries from tags file', async function () {
+          await app.run(['/some/non/existant/file.js'], {update: true})
+          const tags = await fs.readFile(tagsFilePath)
+          expect(tags).to.eq(expectedUpdatedTags2)
+        })
+      })
     })
 
-    it('generates new tags file', async function () {
-      await app.run([fixtureFilePath], {update: true})
-      const tags = await fs.readFile(tagsFilePath)
-      expect(tags).to.eq(expectedNewTags)
+    context('tags file does not exist', function () {
+      it('generates new tags file', async function () {
+        await app.run([fixtureFilePath], {update: true})
+        const tags = await fs.readFile(tagsFilePath)
+        expect(tags).to.eq(expectedNewTags)
+      })
     })
   })
 
