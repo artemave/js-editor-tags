@@ -31,17 +31,17 @@ const argv = require('yargs')
     }
   }).argv
 
-function notIgnored (path) {
-  const patterns = argv.ignore.map((p) => {
-    if (p.match(/\*/)) {
-      return globToRegExp(p, {globstar: true})
-    }
-    return new RegExp(`^${p}(?=/|$)`)
-  })
-  return !patterns.some(p => p.test(path))
-}
+module.exports = async (options = {}) => {
+  function notIgnored (path) {
+    const patterns = options.ignore.map((p) => {
+      if (p.match(/\*/)) {
+        return globToRegExp(p, {globstar: true})
+      }
+      return new RegExp(`^${p}(?=/|$)`)
+    })
+    return !patterns.some(p => p.test(path))
+  }
 
-(async () => {
   try {
     const app = new App({
       tagsFilePath: path.join(process.cwd(), 'tags')
@@ -58,9 +58,9 @@ function notIgnored (path) {
         return files.filter(notIgnored)
       }
 
-      await app.run(await filesToTag(), argv)
+      await app.run(await filesToTag(), options)
 
-      if (argv.watch) {
+      if (options.watch) {
         chokidar.watch(process.cwd(), {
           ignored: /node_modules/,
           cwd: process.cwd(),
@@ -72,7 +72,7 @@ function notIgnored (path) {
           }
         })
         await batchRunner.process(async (paths) => {
-          await app.run(paths, Object.assign({}, argv, {update: true}))
+          await app.run(paths, Object.assign({}, options, {update: true}))
         })
       }
     } else {
@@ -88,7 +88,7 @@ function notIgnored (path) {
         batchRunner.quit()
       })
       await batchRunner.process(async (paths) => {
-        await app.run(paths, argv)
+        await app.run(paths, options)
       })
     }
   } catch (e) {
@@ -96,4 +96,8 @@ function notIgnored (path) {
     process.exit(1)
   }
   process.exit()
-})()
+}
+
+if (!module.parent) {
+  module.exports(argv)
+}
