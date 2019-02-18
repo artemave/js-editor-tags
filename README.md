@@ -9,10 +9,8 @@ Yes, it is fast.
 
 ## Usage
 
-The following will generate `tags` file in the current folder:
-
 ```bash
-npm i -g js-editor-tags
+npm install -g js-editor-tags
 
 # generate `tags` file for all _not git ignored_, _existing_, js/mjs/jsx files in the current folder and subfolders
 js-editor-tags # add --no-git-files-only if you really want ALL files
