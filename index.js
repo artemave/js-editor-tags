@@ -26,14 +26,13 @@ const argv = require('yargs')
     },
     ignore: {
       array: true,
-      describe: 'Ignore path (supports glob)',
-      default: []
+      describe: 'Ignore path (supports glob)'
     }
   }).argv
 
 module.exports = async (options = {}) => {
   function notIgnored (path) {
-    const patterns = options.ignore.map((p) => {
+    const patterns = (options.ignore || []).map((p) => {
       if (p.match(/\*/)) {
         return globToRegExp(p, {globstar: true})
       }
