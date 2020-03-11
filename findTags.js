@@ -7,9 +7,7 @@ module.exports = function findTags (filename, source) {
   const ast = parse(source, {
     sourceType: 'unambiguous',
     plugins: [
-      'jsx',
-      'classProperties',
-      ['decorators', { decoratorsBeforeExport: true }]
+      'jsx'
     ]
   })
   const result = []
