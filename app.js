@@ -5,7 +5,7 @@ const findTags = require('./findTags')
 function formatTag (tag) {
   const exCmd = tag.exCmd || `${tag.line};"`
   const rest = tag.rest || [tag.type]
-  let line = [
+  const line = [
     tag.tagname,
     tag.filename,
     exCmd,
@@ -16,7 +16,7 @@ function formatTag (tag) {
 
 function parseTag (tagString) {
   const [tagname, filename, exCmd, ...rest] = tagString.split('\t')
-  return {tagname, filename, exCmd, rest}
+  return { tagname, filename, exCmd, rest }
 }
 
 function isJsFile (fileName) {
@@ -38,15 +38,15 @@ function byTagname (a, b) {
 }
 
 module.exports = class App {
-  constructor ({fs = new FsAdapter(), tagsFilePath}) {
+  constructor ({ fs = new FsAdapter(), tagsFilePath }) {
     this.fs = fs
     this.tagsFilePath = tagsFilePath
   }
 
-  async run (filesToTag, {update} = {}) {
+  async run (filesToTag, { update } = {}) {
     let tags = update ? await this._existingTagsToKeep(filesToTag) : []
 
-    for (let path of filesToTag.filter(isJsFile)) {
+    for (const path of filesToTag.filter(isJsFile)) {
       debug('tagging %s', path)
       try {
         const source = await this.fs.readFile(path)

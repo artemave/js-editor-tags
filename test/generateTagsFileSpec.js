@@ -1,9 +1,9 @@
 const App = require('../app')
 const FsAdapter = require('../fsAdapter')
 const FsAdapterMemory = require('./fsAdapterMemory')
-const {expect} = require('chai')
+const { expect } = require('chai')
 const path = require('path')
-const {source: fixture} = require('./fixture')
+const { source: fixture } = require('./fixture')
 
 describe('tags', function () {
   let tags, assertTag, generateTags
@@ -12,7 +12,7 @@ describe('tags', function () {
 
   beforeEach(async function () {
     const fs = process.env.REAL_FS ? new FsAdapter() : new FsAdapterMemory()
-    const app = new App({fs, tagsFilePath})
+    const app = new App({ fs, tagsFilePath })
 
     await fs.writeFile(fixtureFilePath, fixture)
     await fs.removeFile(tagsFilePath)
@@ -25,7 +25,7 @@ describe('tags', function () {
 
     tags = await generateTags([fixtureFilePath])
 
-    assertTag = ({tagname, loc, type}) => {
+    assertTag = ({ tagname, loc, type }) => {
       const expected = `${tagname}\ttest/stuff.js\t${loc};"\t${type}`
       expect(tags).to.deep.include(expected, JSON.stringify(tags, null, 2))
     }

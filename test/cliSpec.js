@@ -1,9 +1,9 @@
 const App = require('../app')
 const FsAdapter = require('../fsAdapter')
 const FsAdapterMemory = require('./fsAdapterMemory')
-const {expect} = require('chai')
+const { expect } = require('chai')
 const path = require('path')
-const {expected, source} = require('./fixture')
+const { expected, source } = require('./fixture')
 
 // /\%12l\%34c/ line and column
 
@@ -45,7 +45,7 @@ describe('cli', function () {
   beforeEach(async function () {
     fs = process.env.REAL_FS ? new FsAdapter() : new FsAdapterMemory()
     await fs.removeFile(tagsFilePath)
-    app = new App({fs, tagsFilePath})
+    app = new App({ fs, tagsFilePath })
   })
 
   it('regenerates tags file by default', async function () {
@@ -68,14 +68,14 @@ describe('cli', function () {
       })
 
       it('updates existing tags file', async function () {
-        await app.run([fixtureFilePath], {update: true})
+        await app.run([fixtureFilePath], { update: true })
         const tags = await fs.readFile(tagsFilePath)
         expect(tags).to.eq(expectedUpdatedTags)
       })
 
       context('file to tag does not exist', function () {
         it('removes tag entries from tags file', async function () {
-          await app.run(['/some/non/existant/file.js'], {update: true})
+          await app.run(['/some/non/existant/file.js'], { update: true })
           const tags = await fs.readFile(tagsFilePath)
           expect(tags).to.eq(expectedUpdatedTags2)
         })
@@ -84,7 +84,7 @@ describe('cli', function () {
 
     context('tags file does not exist', function () {
       it('generates new tags file', async function () {
-        await app.run([fixtureFilePath], {update: true})
+        await app.run([fixtureFilePath], { update: true })
         const tags = await fs.readFile(tagsFilePath)
         expect(tags).to.eq(expectedNewTags)
       })

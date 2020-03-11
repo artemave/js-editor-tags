@@ -2,6 +2,7 @@ module.exports = class FsAdapterMemory {
   constructor () {
     this.store = {}
   }
+
   readFile (path) {
     const file = this.store[path]
     if (!file) {
@@ -11,9 +12,11 @@ module.exports = class FsAdapterMemory {
     }
     return file
   }
+
   writeFile (path, content) {
     this.store[path] = content
   }
+
   removeFile (path) {
     delete this.store[path]
   }

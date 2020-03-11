@@ -1,4 +1,4 @@
-const {spawn} = require('child_process')
+const { spawn } = require('child_process')
 const debug = require('debug')('js-tags:shell')
 
 function splitLines (output) {
@@ -6,11 +6,11 @@ function splitLines (output) {
 }
 
 module.exports = class Shell extends Function {
-  constructor ({cwd = process.cwd(), processOutput = splitLines} = {}) {
+  constructor ({ cwd = process.cwd(), processOutput = splitLines } = {}) {
     async function shell (cmd) {
       debug('Running `%s`', cmd)
       return new Promise((resolve, reject) => {
-        const sp = spawn(cmd, [], {cwd, shell: true})
+        const sp = spawn(cmd, [], { cwd, shell: true })
         let result = ''
 
         sp.stdout.on('data', (data) => {

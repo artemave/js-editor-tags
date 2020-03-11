@@ -1,4 +1,4 @@
-const {parse} = require('@babel/parser')
+const { parse } = require('@babel/parser')
 const traverse = require('@babel/traverse').default
 const debug = require('debug')('js-tags')
 const flatten = require('lowscore/flatten')
@@ -16,21 +16,21 @@ module.exports = function findTags (filename, source) {
     result.push(...tags)
   }
 
-  function Identifier ({name, loc}) {
-    return [{tagname: name, line: loc.start.line, type: 'v'}]
+  function Identifier ({ name, loc }) {
+    return [{ tagname: name, line: loc.start.line, type: 'v' }]
   }
 
-  function ObjectPattern ({properties}) {
-    return properties.map(({value: node}) => {
+  function ObjectPattern ({ properties }) {
+    return properties.map(({ value: node }) => {
       return handleVariableDeclaration(node)
     })
   }
 
-  function ArrayPattern ({elements}) {
+  function ArrayPattern ({ elements }) {
     return elements.filter(_ => _).map(handleVariableDeclaration)
   }
 
-  function RestElement ({argument}) {
+  function RestElement ({ argument }) {
     return handleVariableDeclaration(argument)
   }
 
@@ -51,42 +51,42 @@ module.exports = function findTags (filename, source) {
   }
 
   traverse(ast, {
-    ClassDeclaration ({node}) {
+    ClassDeclaration ({ node }) {
       const tagname = node.id.name
-      collect({tagname, filename, line: node.loc.start.line, type: 'c'})
+      collect({ tagname, filename, line: node.loc.start.line, type: 'c' })
     },
-    ClassMethod ({node, parentPath}) {
+    ClassMethod ({ node, parentPath }) {
       if (node.key.name !== 'constructor') {
         const tagname = node.key.name
-        collect({tagname, filename, line: node.loc.start.line, type: 'm'})
+        collect({ tagname, filename, line: node.loc.start.line, type: 'm' })
       }
     },
-    VariableDeclarator ({node}) {
+    VariableDeclarator ({ node }) {
       collect(
         ...flatten(
           handleVariableDeclaration(node.id)
-        ).map(t => Object.assign({filename}, t))
+        ).map(t => Object.assign({ filename }, t))
       )
     },
-    ImportDefaultSpecifier ({node}) {
+    ImportDefaultSpecifier ({ node }) {
       const tagname = node.local.name
       const line = node.loc.start.line
-      collect({tagname, filename, line, type: 'i'})
+      collect({ tagname, filename, line, type: 'i' })
     },
-    ImportSpecifier ({node}) {
+    ImportSpecifier ({ node }) {
       const tagname = node.local.name
       const line = node.loc.start.line
-      collect({tagname, filename, line, type: 'i'})
+      collect({ tagname, filename, line, type: 'i' })
     },
-    FunctionDeclaration ({node}) {
+    FunctionDeclaration ({ node }) {
       const tagname = node.id.name
       const line = node.loc.start.line
-      collect({tagname, filename, line, type: 'f'})
+      collect({ tagname, filename, line, type: 'f' })
     },
-    ObjectMethod ({node}) {
+    ObjectMethod ({ node }) {
       const tagname = node.key.name
       const line = node.key.loc.start.line
-      collect({tagname, filename, line, type: 'm'})
+      collect({ tagname, filename, line, type: 'm' })
     }
   })
 

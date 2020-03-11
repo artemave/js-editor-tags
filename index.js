@@ -34,7 +34,7 @@ module.exports = async (options = {}) => {
   function notIgnored (path) {
     const patterns = (options.ignore || []).map((p) => {
       if (p.match(/\*/)) {
-        return globToRegExp(p, {globstar: true})
+        return globToRegExp(p, { globstar: true })
       }
       return new RegExp(`^${p}(?=/|$)`)
     })
@@ -70,7 +70,7 @@ module.exports = async (options = {}) => {
           }
         })
         await batchRunner.process(async (paths) => {
-          await app.run(paths, Object.assign({}, options, {update: true}))
+          await app.run(paths, Object.assign({}, options, { update: true }))
         })
       }
     } else {
