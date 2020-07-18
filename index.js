@@ -60,7 +60,7 @@ module.exports = async (options = {}) => {
       await app.run(await filesToTag(), options)
 
       if (options.watch) {
-        chokidar.watch('**/*.(js|jsx|ejs|mjs)', {
+        chokidar.watch('**/*.{js,jsx,ejs,mjs}', {
           ignored: /node_modules/,
           ignoreInitial: true
         }).on('all', async (event, path) => {
