@@ -1,6 +1,6 @@
 {
   "name": "js-editor-tags",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "description": "Generate ctags file based on code analysis",
   "main": "index.js",
   "license": "MIT",
